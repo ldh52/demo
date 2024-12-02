@@ -16,10 +16,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class User {
-
     @Id         // primary key
     private String uid;
-
     private String pwd;
     private String uname;
     private String email;
