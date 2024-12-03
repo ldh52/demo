@@ -8,23 +8,27 @@ import com.lion.demo.service.CartService;
 import com.lion.demo.service.OrderService;
 import com.lion.demo.service.UserService;
 import jakarta.servlet.http.HttpSession;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 @Controller
 @RequestMapping("/order")
 public class OrderController {
-    @Autowired private BookService bookService;
-    @Autowired private CartService cartService;
-    @Autowired private OrderService orderService;
-    @Autowired private UserService userService;
+
+    @Autowired
+    private BookService bookService;
+    @Autowired
+    private CartService cartService;
+    @Autowired
+    private OrderService orderService;
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/createOrder")
     public String createOrder(HttpSession session) {
@@ -39,12 +43,13 @@ public class OrderController {
         String uid = (String) session.getAttribute("sessUid");
         List<Order> orderList = orderService.getOrdersByUser(uid);
         List<String> orderTitleList = new ArrayList<>();
-        for (Order order: orderList) {
+        for (Order order : orderList) {
             List<OrderItem> orderItems = order.getOrderItems();
             String title = orderItems.get(0).getBook().getTitle();
             int size = orderItems.size();
-            if (size > 1)
+            if (size > 1) {
                 title += " 외 " + (size - 1) + " 건";
+            }
             orderTitleList.add(title);
         }
         model.addAttribute("orderList", orderList);
@@ -60,15 +65,17 @@ public class OrderController {
         List<Order> orderList = orderService.getOrdersByDateRange(startTime, endTime);
         int totalRevenue = 0, totalBooks = 0;
         List<String> orderTitleList = new ArrayList<>();
-        for (Order order: orderList) {
+        for (Order order : orderList) {
             totalRevenue += order.getTotalAmount();
             List<OrderItem> orderItems = order.getOrderItems();
-            for (OrderItem orderItem: orderItems)
+            for (OrderItem orderItem : orderItems) {
                 totalBooks += orderItem.getQuantity();
+            }
             String title = orderItems.get(0).getBook().getTitle();
             int size = orderItems.size();
-            if (size > 1)
+            if (size > 1) {
                 title += " 외 " + (size - 1) + " 건";
+            }
             orderTitleList.add(title);
         }
         model.addAttribute("orderList", orderList);

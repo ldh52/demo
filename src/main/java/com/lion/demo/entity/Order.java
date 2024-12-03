@@ -1,14 +1,21 @@
 package com.lion.demo.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -17,6 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Order {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long oid;
@@ -33,8 +41,9 @@ public class Order {
 
     // 연관관계 메소드 추가
     public void addOrderItem(OrderItem orderItem) {
-        if (this.orderItems == null)
+        if (this.orderItems == null) {
             this.orderItems = new ArrayList<>();
+        }
         this.orderItems.add(orderItem);
         orderItem.setOrder(this);
     }
