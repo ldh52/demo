@@ -12,6 +12,8 @@
 </head>
 <body style="margin: 50px;">
 <h1>사용자 목록
+
+<!--  if문-->
   <span style="font-size: 16px; margin-left: 100px;">
       <span th:if="${session.sessUid}">
         [[${session.sessUname}]]님 환영합니다.&nbsp;&nbsp;&nbsp;
@@ -34,6 +36,8 @@
     <th>권한</th>
     <th>액션</th>
   </tr>
+
+<!--  for (User user:userList)-->
   <tr th:each="user: ${userList}">
     <td th:text="${userStat.count}">1</td>
     <td th:text="${user.uid}">james</td>
