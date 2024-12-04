@@ -7,6 +7,8 @@ import java.time.LocalDate;
 import java.util.List;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -98,6 +100,22 @@ public class UserController {
             msg = "입력한 아이디가 존재하지 않습니다.";
             url = "/user/register";
         }
+        model.addAttribute("msg", msg);
+        model.addAttribute("url", url);
+        return "common/alertMsg";
+    }
+
+    @GetMapping("/loginSuccess")
+    public String loginSuccess(HttpSession session, Model model) {
+        // Spring Security 현재 세션의 사용자 아이디
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String uid = authentication.getName();
+
+        User user = userService.findByUid(uid);
+        session.setAttribute("sessUid", uid);
+        session.setAttribute("sessUname", user.getUname());
+        String msg = user.getUname() + "님 환영합니다.";
+        String url = "/mall/list";
         model.addAttribute("msg", msg);
         model.addAttribute("url", url);
         return "common/alertMsg";
