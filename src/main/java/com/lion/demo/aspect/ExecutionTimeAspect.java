@@ -11,8 +11,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExecutionTimeAspect {
 
-    @Around("@annotation(LogExecutionTime)")
-    public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+    @Around("@annotation(logExecutionTime)")
+    public Object logExecutionTime(ProceedingJoinPoint joinPoint, LogExecutionTime logExecutionTime)
+        throws Throwable {
 
         //
         String className = joinPoint.getTarget().getClass().getSimpleName();
@@ -20,17 +21,20 @@ public class ExecutionTimeAspect {
 
         // 시작시간
         LocalDateTime startTime = LocalDateTime.now();
-        System.out.println("Method:" + className + "." + methodName + "() | Start time: " + startTime);
+        System.out.println(
+            "Method:" + className + "." + methodName + "() | Start time: " + startTime);
 
         Object result = joinPoint.proceed();    // Primary concern 실행
 
         // 종료시간
         LocalDateTime endTime = LocalDateTime.now();
-        System.out.println("Method:" + className + "." + methodName + "() | End time: " + startTime);
+        System.out.println(
+            "Method:" + className + "." + methodName + "() | End time: " + startTime);
 
         // 종료시간 - 시작시간 차이 출력
         long duration = java.time.Duration.between(startTime, endTime).toMillis();
-        System.out.println("Method:" + className + "." + methodName + "() | Duration: " + duration + "ms");
+        System.out.println(
+            "Method:" + className + "." + methodName + "() | Duration: " + duration + "ms");
 
         return result;
     }
