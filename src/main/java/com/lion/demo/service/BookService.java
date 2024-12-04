@@ -5,11 +5,13 @@ import java.util.List;
 
 public interface BookService {
 
-    public static final int PAGE_SIZE = 10;
+    int PAGE_SIZE = 10;
 
     Book findByBid(long bid);
 
     List<Book> getBooksByPage(int page);
+
+    List<Book> getBookList(int page, String field, String query);
 
     void insertBook(Book book);
 

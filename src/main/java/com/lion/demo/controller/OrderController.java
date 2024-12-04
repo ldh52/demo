@@ -1,5 +1,6 @@
 package com.lion.demo.controller;
 
+import com.lion.demo.entity.BookStat;
 import com.lion.demo.entity.Cart;
 import com.lion.demo.entity.Order;
 import com.lion.demo.entity.OrderItem;
@@ -10,7 +11,9 @@ import com.lion.demo.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -34,6 +37,9 @@ public class OrderController {
     public String createOrder(HttpSession session) {
         String uid = (String) session.getAttribute("sessUid");
         List<Cart> cartList = cartService.getCartItemsByUser(uid);
+        if (cartList.size() != 0) {
+            Order order = orderService.createOrder(uid, cartList);
+        }
         Order order = orderService.createOrder(uid, cartList);
         return "redirect:/order/list";
     }
@@ -83,5 +89,45 @@ public class OrderController {
         model.addAttribute("totalRevenue", totalRevenue);
         model.addAttribute("totalBooks", totalBooks);
         return "order/listAll";
+    }
+
+    @GetMapping("/bookStat")
+    public String bookStat(Model model) {
+        // 2024년 12월
+        LocalDateTime startTime = LocalDateTime.of(2024, 12, 1, 0, 0);
+        LocalDateTime endTime = LocalDateTime.of(2024, 12, 31, 23, 59, 59, 999999999);
+        List<Order> orderList = orderService.getOrdersByDateRange(startTime, endTime);
+        Map<Long, BookStat> map = new HashMap<>();
+
+        for (Order order : orderList) {
+            List<OrderItem> orderItems = order.getOrderItems();
+            for (OrderItem item : orderItems) {
+                long bid = item.getBook().getBid();
+                if (map.containsKey(bid)) { // map에 key값이 존재
+                    BookStat bookStat = map.get(bid);
+                    bookStat.setQuantity(bookStat.getQuantity() + item.getQuantity());
+                    map.replace(bid, bookStat);
+                } else {    // map에 key값이 없는 경우
+                    BookStat bookStat = BookStat.builder()
+                        .bid(bid)
+                        .title(item.getBook().getTitle())
+                        .company(item.getBook().getCompany())
+                        .unitPrice(item.getBook().getPrice())
+                        .quantity(item.getQuantity())
+                        .build();
+                    map.put(bid, bookStat);
+                }
+            }
+        }
+
+        List<BookStat> bookStatList = new ArrayList<>();
+        for (Map.Entry<Long, BookStat> entry : map.entrySet()) {
+            BookStat bookStat = map.get(entry.getKey());
+            bookStat.setTotalPrice(bookStat.getUnitPrice() * bookStat.getQuantity());
+            bookStatList.add(bookStat);
+        }
+
+        model.addAttribute("bookStatList", bookStatList);
+        return "order/bookStat";
     }
 }
