@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,6 +32,20 @@ public class BookController {
         List<Book> bookList = bookService.getBookList(page, field, query);
         model.addAttribute("bookList", bookList);
         return "book/list";
+    }
+
+    @GetMapping("/detail/{bid}")
+    public String detail(@PathVariable long bid,
+        @RequestParam(name = "q", defaultValue = "") String query,
+        Model model) {
+        Book book = bookService.findByBid(bid);
+        if (!query.equals("")) {
+            String highlightedSummary = book.getSummary()
+                .replaceAll(query, "<span style='background-color: skyblue;'>" + query + "</span>");
+            book.setSummary(highlightedSummary);
+        }
+        model.addAttribute("book", book);
+        return "book/detail";
     }
 
     @GetMapping("/insert")
