@@ -30,7 +30,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<Book> getBookList(int page, String field, String query) {
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
-        Page<Book> bookPage;
+        Page<Book> bookPage = null;
         if (field.equals("title")) {
             bookPage = bookRepository.findByTitleContaining(query, pageable);
         } else if (field.equals("author")) {

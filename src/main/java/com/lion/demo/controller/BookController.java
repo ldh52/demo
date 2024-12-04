@@ -23,14 +23,14 @@ public class BookController {
     private BookService bookService;
 
     @GetMapping("/list")
-    public String list
-        (@RequestParam(name = "p", defaultValue = "1") int page,
-            @RequestParam(name = "f", defaultValue = "title") String field,
-            @RequestParam(name = "q", defaultValue = "") String query,
-            Model model) {
+    public String list(@RequestParam(name = "p", defaultValue = "1") int page,
+        @RequestParam(name = "f", defaultValue = "title") String field,
+        @RequestParam(name = "q", defaultValue = "") String query,
+        Model model) {
 //        List<Book> bookList = bookService.getBooksByPage(page);
         List<Book> bookList = bookService.getBookList(page, field, query);
         model.addAttribute("bookList", bookList);
+        model.addAttribute("query", query);
         return "book/list";
     }
 
@@ -59,6 +59,7 @@ public class BookController {
         return "redirect:/book/list";
     }
 
+    // 초기 데이터
     @GetMapping("/yes24")
     public String yes24() {
         csvFileReaderService.csvFileToH2();

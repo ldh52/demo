@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.filter.RequestContextFilter;
 
 @Aspect
 @Component
@@ -18,10 +17,6 @@ public class PermissionAspect {
 
     @Autowired
     private UserService userService;
-    @Autowired
-    private RequestContextFilter requestContextFilter;
-    @Autowired
-    private HttpSession httpSession;
 
     @Before("@annotation(checkPermission)")
     public void checkPermission(JoinPoint joinPoint, CheckPermission checkPermission)
@@ -34,12 +29,12 @@ public class PermissionAspect {
         HttpSession session = attributes.getRequest().getSession();
 
         String requiredPermission = checkPermission.value();
-        String uid = (String) session.getAttribute("uid");
+        String uid = (String) session.getAttribute("sessUid");
         User currentUser = userService.findByUid(uid);
 
         if (!currentUser.getRole().equals(requiredPermission)) {
-            throw new SecurityException("권한 부족:" + requiredPermission);
+            throw new SecurityException("권한 부족: " + requiredPermission);
         }
-        System.out.println("권한 검증 통과:" + joinPoint.getSignature());
+        System.out.println("권한 검증 통과: " + joinPoint.getSignature());
     }
 }

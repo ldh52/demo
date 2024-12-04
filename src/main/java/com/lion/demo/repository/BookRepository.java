@@ -18,5 +18,5 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findBySummaryContaining(String summary, Pageable pageable);
 
-    Page<Book> findByPriceBetween(Float minPrice, Float maxPrice, Pageable pageable);
+    Page<Book> findByPriceBetween(int minPrice, int maxPrice, Pageable pageable);
 }

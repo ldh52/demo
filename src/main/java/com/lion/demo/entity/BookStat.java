@@ -17,5 +17,4 @@ public class BookStat {
     private int unitPrice;
     private int quantity;
     private int totalPrice;
-
 }

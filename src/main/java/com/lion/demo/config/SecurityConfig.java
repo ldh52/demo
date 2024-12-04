@@ -22,7 +22,8 @@ public class SecurityConfig {
             )
             .formLogin(auth -> auth
                 .loginPage("/user/login")       // login form
-                .loginProcessingUrl("/user/login")      // 스프링이 낚아 챔. UserDetailsService 구현 객체에서 처리해주어야 함
+                .loginProcessingUrl(
+                    "/user/login")      // 스프링이 낚아 챔. UserDetailsService 구현 객체에서 처리해주어야 함
                 .usernameParameter("uid")
                 .passwordParameter("pwd")
                 .defaultSuccessUrl("/user/loginSuccess", true)  // 로그인 후 해야할 일

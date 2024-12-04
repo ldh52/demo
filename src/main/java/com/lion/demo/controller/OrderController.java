@@ -42,7 +42,6 @@ public class OrderController {
         if (cartList.size() != 0) {
             Order order = orderService.createOrder(uid, cartList);
         }
-        Order order = orderService.createOrder(uid, cartList);
         return "redirect:/order/list";
     }
 
@@ -107,11 +106,11 @@ public class OrderController {
             List<OrderItem> orderItems = order.getOrderItems();
             for (OrderItem item : orderItems) {
                 long bid = item.getBook().getBid();
-                if (map.containsKey(bid)) { // map에 key값이 존재
+                if (map.containsKey(bid)) {
                     BookStat bookStat = map.get(bid);
                     bookStat.setQuantity(bookStat.getQuantity() + item.getQuantity());
                     map.replace(bid, bookStat);
-                } else {    // map에 key값이 없는 경우
+                } else {
                     BookStat bookStat = BookStat.builder()
                         .bid(bid)
                         .title(item.getBook().getTitle())
@@ -126,11 +125,10 @@ public class OrderController {
 
         List<BookStat> bookStatList = new ArrayList<>();
         for (Map.Entry<Long, BookStat> entry : map.entrySet()) {
-            BookStat bookStat = map.get(entry.getKey());
+            BookStat bookStat = entry.getValue();
             bookStat.setTotalPrice(bookStat.getUnitPrice() * bookStat.getQuantity());
             bookStatList.add(bookStat);
         }
-
         model.addAttribute("bookStatList", bookStatList);
         return "order/bookStat";
     }
