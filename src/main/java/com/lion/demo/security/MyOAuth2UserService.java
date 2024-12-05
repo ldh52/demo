@@ -3,6 +3,7 @@ package com.lion.demo.security;
 import com.lion.demo.entity.User;
 import com.lion.demo.service.UserService;
 import java.time.LocalDate;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,7 +24,7 @@ public class MyOAuth2UserService extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        String uid, email, uname;
+        String uid, email, uname, profileUrl;
         String hashedPwd = bCryptPasswordEncoder.encode("Social Login");
         User user = null;
 
@@ -39,10 +40,11 @@ public class MyOAuth2UserService extends DefaultOAuth2UserService {
                 if (user == null) {         // 내 DB에 없으면 가입을 시켜줌
                     uname = oAuth2User.getAttribute("name");
                     email = oAuth2User.getAttribute("email");
+                    profileUrl = oAuth2User.getAttribute("avatar_url");
                     user = User.builder()
                         .uid(uid).pwd(hashedPwd).uname(uname).email(email)
                         .regDate(LocalDate.now()).role("ROLE_USER").provider(provider)
-                        .profileUrl(user.getProfileUrl())
+                        .profileUrl(profileUrl)
                         .build();
                     userService.registerUser(user);
                     log.info("깃허브 계정을 통해 회원가입이 되었습니다. " + user.getUname());
@@ -50,7 +52,79 @@ public class MyOAuth2UserService extends DefaultOAuth2UserService {
                 break;
 
             case "google":
+                String sub = oAuth2User.getAttribute("sub");    // Google ID
+                uid = provider + "_" + sub;
+                user = userService.findByUid(uid);
+                if (user == null) {         // 내 DB에 없으면 가입을 시켜줌
+                    uname = oAuth2User.getAttribute("name");
+                    uname = (uname == null) ? "google_user" : uname;
+                    email = oAuth2User.getAttribute("email");
+                    profileUrl = oAuth2User.getAttribute("picture");
+                    user = User.builder()
+                        .uid(uid).pwd(hashedPwd).uname(uname).email(email)
+                        .regDate(LocalDate.now()).role("ROLE_USER").provider(provider)
+                        .profileUrl(profileUrl)
+                        .build();
+                    userService.registerUser(user);
+                    log.info("구글 계정을 통해 회원가입이 되었습니다. " + user.getUname());
+                }
+                break;
 
+            case "naver":
+                Map<String, Object> response = oAuth2User.getAttribute("response");
+                String nid = (String) response.get("id");
+                uid = provider + "_" + nid;
+                user = userService.findByUid(uid);
+                if (user == null) {                // 가입이 안되어 있으므로 가입 진행
+                    uname = (String) response.get("nickname");
+                    uname = (uname == null) ? "naver_user" : uname;
+                    email = (String) response.get("email");
+                    user = User.builder()
+                        .uid(uid).pwd(hashedPwd).uname(uname).email(email)
+                        .regDate(LocalDate.now()).role("ROLE_USER").provider(provider)
+                        .build();
+                    userService.registerUser(user);
+                    user = userService.findByUid(uid);
+                    log.info("네이버 계정을 통해 회원가입이 되었습니다.");
+                }
+                break;
+
+            case "kakao":
+                long kid = oAuth2User.getAttribute("id");
+                uid = provider + "_" + kid;
+                user = userService.findByUid(uid);
+                if (user == null) {         // 내 DB에 없으면 가입을 시켜줌
+                    Map<String, String> properties = oAuth2User.getAttribute("properties");
+                    Map<String, Object> account = oAuth2User.getAttribute("kakao_account");
+                    uname = properties.get("nickname");
+                    uname = (uname == null) ? "kakao_user" : uname;
+                    email = (String) account.get("email");
+                    profileUrl = properties.get("profile_image");
+                    user = User.builder()
+                        .uid(uid).pwd(hashedPwd).uname(uname).email(email)
+                        .regDate(LocalDate.now()).role("ROLE_USER").provider(provider)
+                        .profileUrl(profileUrl)
+                        .build();
+                    userService.registerUser(user);
+                    log.info("카카오 계정을 통해 회원가입이 되었습니다. " + user.getUname());
+                }
+                break;
+
+            case "facebook":
+                String fid = oAuth2User.getAttribute("id");    // Facebook ID
+                uid = provider + "_" + fid;
+                user = userService.findByUid(uid);
+                if (user == null) {         // 내 DB에 없으면 가입을 시켜줌
+                    uname = oAuth2User.getAttribute("name");
+                    uname = (uname == null) ? "facebook_user" : uname;
+                    email = oAuth2User.getAttribute("email");
+                    user = User.builder()
+                        .uid(uid).pwd(hashedPwd).uname(uname).email(email)
+                        .regDate(LocalDate.now()).role("ROLE_USER").provider(provider)
+                        .build();
+                    userService.registerUser(user);
+                    log.info("페이스북 계정을 통해 회원가입이 되었습니다. " + user.getUname());
+                }
                 break;
         }
 
