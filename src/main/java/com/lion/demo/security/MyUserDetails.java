@@ -1,5 +1,6 @@
-package com.lion.demo.entity;
+package com.lion.demo.security;
 
+import com.lion.demo.entity.User;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;
