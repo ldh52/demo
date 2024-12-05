@@ -39,6 +39,7 @@ public class MyOAuth2UserService extends DefaultOAuth2UserService {
                 user = userService.findByUid(uid);
                 if (user == null) {         // 내 DB에 없으면 가입을 시켜줌
                     uname = oAuth2User.getAttribute("name");
+                    uname = (uname == null) ? "github_user" : uname;
                     email = oAuth2User.getAttribute("email");
                     profileUrl = oAuth2User.getAttribute("avatar_url");
                     user = User.builder()
@@ -75,17 +76,18 @@ public class MyOAuth2UserService extends DefaultOAuth2UserService {
                 String nid = (String) response.get("id");
                 uid = provider + "_" + nid;
                 user = userService.findByUid(uid);
-                if (user == null) {                // 가입이 안되어 있으므로 가입 진행
+                if (user == null) {         // 내 DB에 없으면 가입을 시켜줌
                     uname = (String) response.get("nickname");
                     uname = (uname == null) ? "naver_user" : uname;
                     email = (String) response.get("email");
+                    profileUrl = (String) response.get("profile_image");
                     user = User.builder()
                         .uid(uid).pwd(hashedPwd).uname(uname).email(email)
                         .regDate(LocalDate.now()).role("ROLE_USER").provider(provider)
+                        .profileUrl(profileUrl)
                         .build();
                     userService.registerUser(user);
-                    user = userService.findByUid(uid);
-                    log.info("네이버 계정을 통해 회원가입이 되었습니다.");
+                    log.info("네이버 계정을 통해 회원가입이 되었습니다. " + user.getUname());
                 }
                 break;
 
