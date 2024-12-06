@@ -3,6 +3,8 @@ package com.lion.demo.controller;
 import com.lion.demo.entity.Book;
 import com.lion.demo.service.BookService;
 import com.lion.demo.service.CsvFileReaderService;
+import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -26,11 +28,25 @@ public class BookController {
     public String list(@RequestParam(name = "p", defaultValue = "1") int page,
         @RequestParam(name = "f", defaultValue = "title") String field,
         @RequestParam(name = "q", defaultValue = "") String query,
-        Model model) {
+        HttpSession session, Model model) {
 //        List<Book> bookList = bookService.getBooksByPage(page);
         List<Book> bookList = bookService.getBookList(page, field, query);
+
+        int totalPages = 11, startPage = 1, endPage = 10;
+        List<Integer> pageList = new ArrayList<>();
+        for (int i = startPage; i <= endPage; i++) {
+            pageList.add(i);
+        }
+
+        session.setAttribute("menu", "book");
+        session.setAttribute("currentPage", page);
         model.addAttribute("bookList", bookList);
+        model.addAttribute("field", field);
         model.addAttribute("query", query);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("startPage", startPage);
+        model.addAttribute("endPage", endPage);
+        model.addAttribute("pageList", pageList);
         return "book/list";
     }
 
