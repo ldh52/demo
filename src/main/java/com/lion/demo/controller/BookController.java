@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,18 +30,21 @@ public class BookController {
         @RequestParam(name = "f", defaultValue = "title") String field,
         @RequestParam(name = "q", defaultValue = "") String query,
         HttpSession session, Model model) {
-//        List<Book> bookList = bookService.getBooksByPage(page);
-        List<Book> bookList = bookService.getBookList(page, field, query);
 
-        int totalPages = 11, startPage = 1, endPage = 10;
+//        List<Book> bookList = bookService.getBookList(page, field, query);
+        Page<Book> pagedResult = bookService.getPagedBooks(page, field, query);
+        int totalPages = pagedResult.getTotalPages();
+        int startPage =
+            (int) Math.ceil((page - 0.5) / BookService.PAGE_SIZE - 1) * BookService.PAGE_SIZE + 1;
+        int endPage = Math.min(startPage + BookService.PAGE_SIZE - 1, totalPages);
         List<Integer> pageList = new ArrayList<>();
         for (int i = startPage; i <= endPage; i++) {
             pageList.add(i);
         }
 
         session.setAttribute("menu", "book");
-        session.setAttribute("currentPage", page);
-        model.addAttribute("bookList", bookList);
+        session.setAttribute("currentBookPage", page);
+        model.addAttribute("bookList", pagedResult.getContent());
         model.addAttribute("field", field);
         model.addAttribute("query", query);
         model.addAttribute("totalPages", totalPages);
