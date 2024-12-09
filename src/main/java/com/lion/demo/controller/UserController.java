@@ -44,8 +44,9 @@ public class UserController {
     }
 
     @GetMapping("/list")
-    public String list(Model model) {
+    public String list(HttpSession session, Model model) {
         List<User> userList = userService.getUsers();
+        session.setAttribute("menu", "user");
         model.addAttribute("userList", userList);
         return "user/list";
     }
@@ -115,7 +116,16 @@ public class UserController {
         session.setAttribute("sessUid", uid);
         session.setAttribute("sessUname", user.getUname());
         String msg = user.getUname() + "님 환영합니다.";
-        String url = "/mall/list";
+        String url = "/book/list";
+        model.addAttribute("msg", msg);
+        model.addAttribute("url", url);
+        return "common/alertMsg";
+    }
+
+    @GetMapping("/loginFailure")
+    public String loginFailure(Model model) {
+        String msg = "잘못 입력하였습니다.";
+        String url = "/user/login";
         model.addAttribute("msg", msg);
         model.addAttribute("url", url);
         return "common/alertMsg";
