@@ -7,9 +7,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class ApiService {
-
-    @Autowired
-    private RestTemplate restTemplate;
+    @Autowired private RestTemplate restTemplate;
 
     public String fetchData() {
         String url = "https://jsonplaceholder.typicode.com/posts/1";
