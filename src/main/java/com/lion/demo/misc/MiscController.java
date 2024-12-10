@@ -23,7 +23,6 @@ public class MiscController {
         return result;
     }
 
-    // 오류가 난 부분 : serverPort가 없음
     @GetMapping("/port")
     public String port() {
         return "Server port = " + serverPort;
