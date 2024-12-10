@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 public class Chatter {
 
     private String friendUid;
-    private String friendName;
-    private String profileUrl;
+    private String friendUname;
+    private String friendProfileUrl;
     private String message;
     private String timeStr;
     private int newCount;

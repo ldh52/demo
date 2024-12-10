@@ -32,7 +32,6 @@ public class Recipient {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "friendUid", referencedColumnName = "uid")
     private User friend;
+
     private LocalDateTime timestamp;
-
-
 }
