@@ -9,4 +9,3 @@ public interface RecipientRepository extends JpaRepository<Recipient, Long> {
 
     List<Recipient> findByFriendUid(String friendUid);
 }
-

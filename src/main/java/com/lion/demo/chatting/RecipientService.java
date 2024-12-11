@@ -8,5 +8,4 @@ public interface RecipientService {
     List<Recipient> getFriendList(String uid);
 
     void insertFriend(User user, User friend);
-
 }

@@ -4,6 +4,7 @@ let userId, recipientId;
 function connect() {
   userId = document.getElementById('userId').value;
   const chattingStatus = document.getElementById('chattingStatus').value;
+  console.log(chattingStatus);
   const serverPort = $('#serverPort').val();
   socket = new WebSocket(
       'ws://localhost:' + serverPort + '/chat?userId=' + userId + '&status='
@@ -16,8 +17,8 @@ function connect() {
   socket.onmessage = async (event) => {
     console.log('Message from server: ' + event.data);
     setTimeout(async () => {
-      await fetchChatterList();
-    }, 200);
+      await fetchChatItems();
+    }, 100);
   }
   socket.onclose = () => {
     console.log('Disconnected from the server');
@@ -32,8 +33,10 @@ async function fetchChatItems() {
     const response = await fetch(
         `/chatting/getChatItems?userId=${userId}&recipientId=${recipientId}`);
     if (response.ok) {
-      const chatItemsByDate = await response.json();
-      updateChatContainer(chatItemsByDate);
+      setTimeout(async () => {
+        const chatItemsByDate = await response.json();
+        updateChatContainer(chatItemsByDate);
+      }, 100);
     }
   } catch (error) {
     console.error("Failed to fetch messages:", error);
@@ -91,7 +94,7 @@ function updateChatContainer(chatItemsByDate) {
   inputTag.type = "text";
   inputTag.id = "messageInput";
   inputTag.placeholder = "메시지 입력";
-  inputTag.addEventListener("keydown", handleEnterKey);
+  inputTag.addEventListener("keypress", handleEnterKey);
   chatContainer.appendChild(inputTag);
 
   // 스크롤을 가장 아래로 내리기
@@ -103,4 +106,37 @@ function handleEnterKey(event) {
     event.preventDefault();     // 줄바꿈 방지(기본 엔터 키 동작 방지)
     sendMessage();
   }
+}
+
+function sendMessage() {
+  const recipientId = document.getElementById('recipientId').value;
+  const userId = document.getElementById('userId').value;
+  const message = document.getElementById('messageInput').value;
+
+  // socket 송신 - 상대방이 받을 준비가 되어 있어야 가능
+  socket.send(recipientId + ':' + message);
+
+  // DB에 저장 - Controller에게 보내기
+  const formData = new FormData();
+  formData.append('senderUid', userId);
+  formData.append('recipientUid', recipientId);
+  formData.append('message', message);
+  $.ajax({
+    type: 'POST',
+    data: formData,
+    url: '/chatting/insert',
+    processData: false,     // jQuery가 data를 변환하는 것을 방지
+    contentType: false,     // jQuery가 content type을 변경하는 것을 방지
+    success: function () {
+      $('#messageInput').val('');
+      fetchChatItems();
+    }
+  });
+}
+
+function sendSignal() {
+  const recipientId = document.getElementById('recipientId').value;
+
+  // socket 송신 - 상대방에게 내가 접속했음을 알림
+  socket.send(recipientId + ':Alive');
 }
