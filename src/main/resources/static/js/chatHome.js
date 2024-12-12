@@ -5,15 +5,15 @@ function connect() {
   userId = document.getElementById('userId').value;
   const chattingStatus = document.getElementById('chattingStatus').value;
   const serverPort = $('#serverPort').val();
-  socket = new WebSocket(
-      'ws://localhost:' + serverPort + '/chat?userId=' + userId + '&status='
-      + chattingStatus);
+  const serverIp = $('#serverIp').val();
+//	socket = new WebSocket('ws://localhost:' + serverPort + '/chat?userId=' + userId + '&status=' + chattingStatus);
+  socket = new WebSocket(`ws://${serverIp}:${serverPort}/chat?userId=${userId}&status=${chattingStatus}`);
 
   socket.onopen = () => {
     console.log('Connected as ' + userId);
     $('#statusIcon').css({color: 'green', fontWeight: 'bold'});
   }
-  socket.onmessage = async (event) => {
+  socket.onmessage = async(event) => {
     console.log('Message from server: ' + event.data);
     setTimeout(async () => {
       await fetchChatterList();
@@ -58,8 +58,7 @@ function updateChatterList(chatterList) {
             <td style="text-align: center;">
                 <span style="font-size: 0.8rem;">
                     ${chatter.timeStr}
-                    ${chatter.newCount !== 0
-        ? `<br><span class="new-count">${chatter.newCount}</span>` : ''}
+                    ${chatter.newCount !== 0 ? `<br><span class="new-count">${chatter.newCount}</span>` : ''}
                 </span>
             </td>
         `;
@@ -85,7 +84,7 @@ function handlePopover() {
   });
 
   // 팝오버 열기
-  popoverTrigger.addEventListener('click', function (event) {
+  popoverTrigger.addEventListener('click', function(event) {
     event.stopPropagation(); // 이벤트 버블링 방지
     if (popoverTrigger.getAttribute('aria-expanded') === 'true') {
       popover.hide();
@@ -104,11 +103,10 @@ function handlePopover() {
         if (friendUid !== '') {
           if (confirm(`친구 ${friendUid}를 추가합니다.`)) {
             // 서버에 AJAX 요청 예시
-            $.post('/chatting/addFriend', {friendUid: friendUid},
-                function (response) {
-                  console.log('친구 추가 성공:', response);
-                  fetchChatterList();
-                });
+            $.post('/chatting/addFriend', { friendUid: friendUid }, function (response) {
+              console.log('친구 추가 성공:', response);
+              fetchChatterList();
+            });
           }
           popover.hide();
         } else {
@@ -126,8 +124,7 @@ function handlePopover() {
   // 팝오버 외부를 클릭하면 닫기
   document.addEventListener('click', function (event) {
     const popoverElement = document.querySelector('.popover');
-    if (popoverElement && !popoverElement.contains(event.target) && event.target
-        !== popoverTrigger) {
+    if (popoverElement && !popoverElement.contains(event.target) && event.target !== popoverTrigger) {
       popover.hide();
     }
   });
