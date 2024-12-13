@@ -6,15 +6,15 @@ function connect() {
   const chattingStatus = document.getElementById('chattingStatus').value;
   console.log(chattingStatus);
   const serverPort = $('#serverPort').val();
-  const serverIp = $('#serverIp').val();
-  //	socket = new WebSocket('ws://localhost:' + serverPort + '/chat?userId=' + userId + '&status=' + chattingStatus);
-  socket = new WebSocket(`ws://${serverIp}:${serverPort}/chat?userId=${userId}&status=${chattingStatus}`);
+  socket = new WebSocket(
+      'ws://localhost:' + serverPort + '/chat?userId=' + userId + '&status='
+      + chattingStatus);
 
   socket.onopen = () => {
     console.log('Connected as ' + userId);
     $('#statusIcon').css({color: 'green', fontWeight: 'bold'});
   }
-  socket.onmessage = async(event) => {
+  socket.onmessage = async (event) => {
     console.log('Message from server: ' + event.data);
     setTimeout(async () => {
       await fetchChatItems();
@@ -28,9 +28,10 @@ function connect() {
 
 async function fetchChatItems() {
   const userId = $('#userId').val();
-  const recipientId  = $('#recipientId').val();
+  const recipientId = $('#recipientId').val();
   try {
-    const response = await fetch(`/chatting/getChatItems?userId=${userId}&recipientId=${recipientId}`);
+    const response = await fetch(
+        `/chatting/getChatItems?userId=${userId}&recipientId=${recipientId}`);
     if (response.ok) {
       setTimeout(async () => {
         const chatItemsByDate = await response.json();
@@ -76,7 +77,8 @@ function updateChatContainer(chatItemsByDate) {
         chatItemDiv.innerHTML = `
                     <div class="message sent">
                         <span style="font-size: 0.6rem; margin-right: 3px;">
-                            ${chat.hasRead === 0 ? `<span class="read-status">1</span>` : ''}
+                            ${chat.hasRead === 0
+            ? `<span class="read-status">1</span>` : ''}
                             ${chat.timeStr}
                         </span>
                         <p>${chat.message}</p>
@@ -125,7 +127,7 @@ function sendMessage() {
     url: '/chatting/insert',
     processData: false,     // jQuery가 data를 변환하는 것을 방지
     contentType: false,     // jQuery가 content type을 변경하는 것을 방지
-    success: function() {
+    success: function () {
       $('#messageInput').val('');
       fetchChatItems();
     }
