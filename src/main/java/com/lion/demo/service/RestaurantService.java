@@ -81,7 +81,24 @@ public class RestaurantService {
                             "fuzziness": "AUTO"
                         }
                     }        
-                """, field, keyword
+                """, keyword
+            );
+        } else if (field.equals("reviews")) {
+            queryString = String.format("""
+                    {
+                        "nested": {
+                            "path": "reviews",
+                            "query": {
+                                "match": {
+                                    "reviews.review": {
+                                        "query": "%s",
+                                        "fuzziness": "AUTO"
+                                    }
+                                }
+                            }
+                        }
+                    }        
+                """, keyword
             );
         } else {
             queryString = String.format("""
@@ -92,7 +109,7 @@ public class RestaurantService {
                                 "fuzziness": "AUTO"
                             }
                         }
-                    }
+                    }        
                 """, field, keyword
             );
         }
