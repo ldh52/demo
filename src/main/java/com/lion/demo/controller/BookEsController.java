@@ -43,7 +43,7 @@ public class BookEsController {
             pageList.add(i);
         }
 
-        session.setAttribute("menu", "bookEs");
+        session.setAttribute("menu", "elastic");
         session.setAttribute("currentBookEsPage", page);
         model.addAttribute("bookEsDtoList", pagedResult.getContent());
         model.addAttribute("field", field);

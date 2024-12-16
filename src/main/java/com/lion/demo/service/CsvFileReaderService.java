@@ -1,10 +1,16 @@
 package com.lion.demo.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lion.demo.entity.Book;
 import com.lion.demo.entity.BookEs;
+import com.lion.demo.entity.Restaurant;
+import com.lion.demo.repository.RestaurantRepository;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -22,6 +28,8 @@ public class CsvFileReaderService {
     private BookService bookService;
     @Autowired
     private BookEsService bookEsService;
+    @Autowired
+    private RestaurantRepository restaurantRepository;
 
     public void csvFileToH2() {
         try {
@@ -82,6 +90,47 @@ public class CsvFileReaderService {
 
                     if (count++ % 1000 == 0) {
                         System.out.println("count = " + count);
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void restaurantSeoulToElasticSearch() {
+        try {
+            Resource resource = resourceLoader.getResource("classpath:/static/data/서울맛집3.csv");
+            try (Reader reader = new InputStreamReader(resource.getInputStream(),
+                StandardCharsets.UTF_8);
+                CSVParser csvParser = new CSVParser(reader,
+                    CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
+                int count = 0;
+                for (CSVRecord record : csvParser) {
+                    String name = record.get("상호");
+                    String intro = record.get("설명");
+                    String imgSrc = record.get("img_src");
+                    String infoJsonStr = record.get("업소정보");
+                    String reviewJsonStr = record.get("리뷰");
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        Map<String, Object> info = objectMapper.readValue(infoJsonStr, Map.class);
+                        List<Map<String, Object>> reviews = objectMapper.readValue(reviewJsonStr,
+                            new TypeReference<>() {
+                            });
+
+                        Restaurant restaurant = Restaurant.builder()
+                            .name(name).intro(intro).imgSrc(imgSrc).info(info).reviews(reviews)
+                            .build();
+                        restaurantRepository.save(restaurant);
+
+                        if (count++ % 100 == 0) {
+                            System.out.println("count = " + count);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
             }

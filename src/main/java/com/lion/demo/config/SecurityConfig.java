@@ -26,7 +26,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(requests -> requests
                 .requestMatchers("/book/list", "/book/detail/**", "/bookEs/list",
                     "/bookEs/detail/**",
-                    "/misc/**", "/actuator/**",
+                    "/misc/**", "/actuator/**", "/restaurant/**",
                     "/websocket/**", "/echo", "/personal",
                     "/mall/list", "/mall/detail/**", "/user/register", "/h2-console", "/demo/**",
                     "/img/**", "/js/**", "/css/**", "/error/**").permitAll()
