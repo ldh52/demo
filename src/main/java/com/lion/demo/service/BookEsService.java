@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -33,11 +34,23 @@ public class BookEsService {
         bookEsRepository.save(bookEs);
     }
 
-    public Page<BookEsDto> getPagedBooks(int page, String field, String keyword) {
+    public void deleteBookEs(String bookId) {
+        bookEsRepository.deleteById(bookId);
+    }
+
+    public Page<BookEsDto> getPagedBooks(int page, String field, String keyword, String sortField,
+        String sortDirection) {
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
+        // 정렬 필드에 keyword 서브 필드 사용
+        String sortFieldToUse = sortField + ".keyword";
+        Sort.Direction direction =
+            sortDirection.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Query query = NativeQuery.builder()
             .withQuery(buildMatchQuery(field, keyword))
-            .withPageable(PageRequest.of(page - 1, PAGE_SIZE))
+            .withSort(Sort.by(Sort.Order.desc("_score")))       // 1. matchScore 기준 정렬
+            .withSort(Sort.by(direction, sortFieldToUse))     // 2. titel/author.keyword 기준 정렬
+            .withTrackScores(true)
+            .withPageable(pageable)
             .build();
         SearchHits<BookEs> searchHits = elasticsearchTemplate.search(query, BookEs.class);
         List<BookEsDto> bookEsDtoList = searchHits
@@ -62,7 +75,7 @@ public class BookEsService {
                                     "fuzziness": "AUTO"
                                 }
                             }
-                        }
+                        }        
                 """,
             field, keyword
         );

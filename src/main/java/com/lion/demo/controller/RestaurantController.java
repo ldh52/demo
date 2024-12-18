@@ -32,9 +32,12 @@ public class RestaurantController {
     public String list(@RequestParam(name = "p", defaultValue = "1") int page,
         @RequestParam(name = "f", defaultValue = "name") String field,
         @RequestParam(name = "q", defaultValue = "") String query,
+        @RequestParam(name = "sd", defaultValue = "asc") String sortDirection,
+        @RequestParam(name = "sw", defaultValue = "false") boolean sortWithinResults,
         HttpSession session, Model model) {
 
-        Page<RestaurantDto> pagedResult = restaurantService.getPagedRestaurants(page, field, query);
+        Page<RestaurantDto> pagedResult = restaurantService.getPagedRestaurants(page, field, query,
+            sortDirection, sortWithinResults);
         int totalPages = pagedResult.getTotalPages();
         int startPage = (int) Math.ceil((page - 0.5) / RestaurantService.PAGE_SIZE - 1)
             * RestaurantService.PAGE_SIZE + 1;
@@ -53,16 +56,19 @@ public class RestaurantController {
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
         model.addAttribute("pageList", pageList);
+        model.addAttribute("sortDirection", sortDirection);
+        model.addAttribute("sortWithinResults", sortWithinResults);
         return "restaurant/list";
     }
 
     @GetMapping("/detail/{id}")
-    public String detail(@PathVariable("id") String id, Model model) {
+    public String detail(@PathVariable String id, Model model) {
         Restaurant restaurant = restaurantService.findById(id);
         Map<String, Object> infoMap = new HashMap<>();
-        for (String key: restaurant.getInfo().keySet()) {
-            if (key.equals("전화번호"))
+        for (String key : restaurant.getInfo().keySet()) {
+            if (key.equals("전화번호")) {
                 continue;
+            }
             infoMap.put(key, restaurant.getInfo().get(key));
         }
 

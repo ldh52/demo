@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -30,9 +31,12 @@ public class BookEsController {
     public String list(@RequestParam(name = "p", defaultValue = "1") int page,
         @RequestParam(name = "f", defaultValue = "title") String field,
         @RequestParam(name = "q", defaultValue = "") String query,
+        @RequestParam(name = "sf", defaultValue = "title") String sortField,
+        @RequestParam(name = "sd", defaultValue = "asc") String sortDirection,
         HttpSession session, Model model) {
 
-        Page<BookEsDto> pagedResult = bookEsService.getPagedBooks(page, field, query);
+        Page<BookEsDto> pagedResult = bookEsService.getPagedBooks(page, field, query, sortField,
+            sortDirection);
         int totalPages = pagedResult.getTotalPages();
         int startPage =
             (int) Math.ceil((page - 0.5) / BookEsService.PAGE_SIZE - 1) * BookEsService.PAGE_SIZE
@@ -52,12 +56,14 @@ public class BookEsController {
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
         model.addAttribute("pageList", pageList);
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDirection", sortDirection);
         return "bookEs/list";
     }
 
     @GetMapping("/detail/{bookId}")
     public String detail(@PathVariable String bookId,
-        @RequestParam(name = "q", defaultValue = "**") String query,
+        @RequestParam(name = "q", defaultValue = "") String query,
         Model model) {
         BookEs bookEs = bookEsService.findById(bookId);
         if (!query.equals("")) {
@@ -69,6 +75,26 @@ public class BookEsController {
         return "bookEs/detail";
     }
 
+    @GetMapping("/insert")
+    public String insertForm() {
+        return "bookEs/insert";
+    }
+
+    @PostMapping("/insert")
+    public String insertProc(BookEs b) {
+        BookEs bookEs = BookEs.builder()
+            .title(b.getTitle()).author(b.getAuthor()).company(b.getCompany())
+            .price(b.getPrice()).imageUrl(b.getImageUrl()).summary(b.getSummary())
+            .build();
+        bookEsService.insertBookEs(bookEs);
+        return "redirect:/bookEs/list";
+    }
+
+    @GetMapping("/delete/{bookId}")
+    public String delete(@PathVariable String bookId) {
+        bookEsService.deleteBookEs(bookId);
+        return "redirect:/bookEs/list";
+    }
 
     @GetMapping("/yes24")
     @ResponseBody

@@ -22,7 +22,9 @@
     function search() {
       const field = document.getElementById('field').value;
       const query = document.getElementById('query').value;
-      const uri = '/restaurant/list?p=1' + '&f=' + field + '&q=' + query;
+      const sortWithinResults = document.getElementById('sortWithinResults').checked;
+      const uri = '/restaurant/list?p=1' + '&f=' + field + '&q=' + query + '&sw='
+          + sortWithinResults;
       location.href = encodeURI(uri);   // 한글 입력시 인코딩해서 전달
     }
   </script>
@@ -40,7 +42,7 @@
       <main>
         <table class="table table-sm table-borderless">
           <tr>
-            <td style="width: 52%; text-align: left">
+            <td style="width: 36%; text-align: left;">
               <h3>
                 <strong class="me-5">서울맛집 목록</strong>
                 <span style="font-size: 16px;">
@@ -48,6 +50,15 @@
                   </span>
               </h3>
             </td>
+            <td style="width: 16%;">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="sortWithinResults"
+                       onclick="search()"
+                       th:checked="${sortWithinResults == true}"/>
+                <label class="form-check-label" for="sortWithinResults">결과내 정렬</label>
+              </div>
+            </td>
+
             <td style="width: 16%">
               <select class="form-control" id="field">
                 <option value="name" th:selected="${field == 'name'}">상호</option>
@@ -58,13 +69,13 @@
             </td>
             <td style="width: 24%">
                 <span th:unless="${query}">
-									<input class="form-control" type="text" id="query" placeholder="검색할 내용"
+                  <input class="form-control" type="text" id="query" placeholder="검색할 내용"
                          onkeydown="handleEnter(event)">
-								</span>
+                </span>
               <span th:if="${query}">
-									<input class="form-control" type="text" id="query" th:value="${query}"
+                  <input class="form-control" type="text" id="query" th:value="${query}"
                          onkeydown="handleEnter(event)">
-								</span>
+                </span>
             </td>
             <td style="width: 8%">
               <button class="btn btn-outline-primary" onclick="search()">검색</button>
@@ -77,7 +88,12 @@
         <table class="table">
           <tr>
             <th style="width: 12%">이미지</th>
-            <th style="width: 28%">상호</th>
+            <th style="width: 28%">
+              상호
+              <a th:href="@{/restaurant/list(p=1,f=${field},q=${query},sd=${sortDirection == 'asc' ? 'desc' : 'asc'})}">
+                <i th:classappend="${sortDirection == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
+              </a>
+            </th>
             <th style="width: 15%">업소정보 갯수</th>
             <th style="width: 15%">리뷰 갯수</th>
             <th style="width: 15%">평점 평균</th>
@@ -93,8 +109,8 @@
                       th:text="${restaurantDto.restaurant.name}">통인시장</span>
               </a>
             </td>
-            <td th:text="${restaurantDto.infoCount}">8</td>
-            <td th:text="${restaurantDto.reviewCount}">5</td>
+            <td th:text="${restaurantDto.infoCount}" style="text-align: center;">8</td>
+            <td th:text="${restaurantDto.reviewCount}" style="text-align: center;">5</td>
             <td th:text="${#numbers.formatDecimal(restaurantDto.reviewScore, 1, 1)}"
                 style="text-align: center;">3.4
             </td>
@@ -106,39 +122,49 @@
 
         <!-- pagination -->
         <ul class="pagination justify-content-center my-4">
-						<span th:if="${session.currentRestaurantPage gt 10}">
-							<li class="page-item"><a class="page-link"
+            <span th:if="${totalPages gt 10}">
+              <li class="page-item"><a class="page-link"
+                                       th:href="@{/restaurant/list(p=1,f=${field},q=${query})}"><i
+                  class="fa-solid fa-angles-left"></i></a></li>
+            </span>
+          <span th:if="${session.currentRestaurantPage gt 10}">
+              <li class="page-item"><a class="page-link"
                                        th:href="@{/restaurant/list(p=${startPage-1},f=${field},q=${query})}"><i
-                  class="fa-solid fa-less-than"></i></a></li>
-						</span>
+                  class="fa-solid fa-angle-left"></i></a></li>
+            </span>
           <span th:if="${session.currentRestaurantPage le 10}">
-							<li class="page-item"><a class="page-link" href="#"><i
-                  class="fa-solid fa-less-than"></i></a></li>
-						</span>
+              <li class="page-item"><a class="page-link" href="#"><i
+                  class="fa-solid fa-angle-left"></i></a></li>
+            </span>
           <span th:each="page: ${pageList}">
-							<span th:switch="${page}">
-								<th:block th:case="${session.currentRestaurantPage}">
-									<li class="page-item active">
-										<a class="page-link" href="#">[[${page}]]</a>
-									</li>
-								</th:block>
-								<th:block th:case="*">
-									<li class="page-item">
-										<a class="page-link"
+              <span th:switch="${page}">
+                <th:block th:case="${session.currentRestaurantPage}">
+                  <li class="page-item active">
+                    <a class="page-link" href="#">[[${page}]]</a>
+                  </li>
+                </th:block>
+                <th:block th:case="*">
+                  <li class="page-item">
+                    <a class="page-link"
                        th:href="@{/restaurant/list(p=${page},f=${field},q=${query})}">[[${page}]]</a>
-									</li>
-								</th:block>
-							</span>
-						</span>
+                  </li>
+                </th:block>
+              </span>
+            </span>
           <span th:if="${totalPages gt endPage}">
-							<li class="page-item"><a class="page-link"
+              <li class="page-item"><a class="page-link"
                                        th:href="@{/restaurant/list(p=${endPage+1},f=${field},q=${query})}"><i
-                  class="fa-solid fa-greater-than"></i></a></li>
-						</span>
+                  class="fa-solid fa-angle-right"></i></i></a></li>
+            </span>
           <span th:if="${totalPages eq endPage}">
-							<li class="page-item"><a class="page-link" href="#"><i
-                  class="fa-solid fa-greater-than"></i></a></li>
-						</span>
+              <li class="page-item"><a class="page-link" href="#"><i
+                  class="fa-solid fa-angle-right"></i></i></a></li>
+            </span>
+          <span th:if="${totalPages gt 10}">
+              <li class="page-item"><a class="page-link"
+                                       th:href="@{/restaurant/list(p=${totalPages},f=${field},q=${query})}"><i
+                  class="fa-solid fa-angles-right"></i></i></a></li>
+            </span>
         </ul>
       </main>
     </div>
